@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ellsworth Park Ward · Temple & Family History Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dusk: #232F4B;
+    --dusk-deep: #18213A;
+    --ivory: #FAF7F0;
+    --stone: #EFE9DC;
+    --gold: #B8933E;
+    --gold-bright: #D4AF5C;
+    --ink: #2B3244;
+    --muted: #6A7285;
+    --line: #E3DCCB;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    background: var(--ivory);
+    color: var(--ink);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 0 20px 56px; }
+
+  /* ---------- Header ---------- */
+  header { text-align: center; padding: 44px 0 8px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700; font-size: 34px; line-height: 1.15;
+    color: var(--dusk); margin-top: 8px;
+  }
+  .intro { margin-top: 14px; color: var(--muted); font-size: 15.5px; }
+
+  .scripture {
+    margin: 26px auto 0; max-width: 420px;
+    padding: 0 12px;
+  }
+  .scripture-rule {
+    width: 46px; height: 1px; background: var(--gold);
+    margin: 0 auto 16px;
+  }
+  .scripture p {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 21px; line-height: 1.45;
+    color: var(--dusk);
+  }
+  .scripture cite {
+    display: block; margin-top: 8px; font-style: normal;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold);
+  }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 14px; padding: 24px 22px;
+    margin-top: 30px;
+    box-shadow: 0 1px 2px rgba(35,47,75,0.04);
+  }
+  .card h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700; font-size: 22px; color: var(--dusk);
+  }
+  .card .hint { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+  /* ---------- Submit form ---------- */
+  .points-row { display: flex; gap: 10px; margin-top: 18px; }
+  input[type="number"] {
+    flex: 1; min-width: 0;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 22px; font-weight: 600; color: var(--dusk);
+    padding: 12px 14px; text-align: center;
+    border: 1.5px solid var(--line); border-radius: 10px;
+    background: var(--ivory);
+    -moz-appearance: textfield; appearance: textfield;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"]:focus {
+    outline: 2px solid var(--gold); outline-offset: 1px; border-color: var(--gold);
+  }
+  button.submit {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.02em;
+    color: var(--dusk-deep);
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    border: none; border-radius: 10px; padding: 12px 22px;
+    cursor: pointer; white-space: nowrap;
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
+  button.submit:hover { filter: brightness(1.05); }
+  button.submit:active { transform: translateY(1px); }
+  button.submit:disabled { opacity: 0.55; cursor: default; }
+  button.submit:focus-visible { outline: 2px solid var(--dusk); outline-offset: 2px; }
+  .feedback {
+    margin-top: 12px; font-size: 14.5px; font-weight: 600;
+    min-height: 22px;
+  }
+  .feedback.ok { color: #3E7A4E; }
+  .feedback.err { color: #A6453B; }
+
+  /* ---------- Arched total panel ---------- */
+  .arch {
+    margin: 36px auto 0; max-width: 340px;
+    background: linear-gradient(180deg, var(--dusk) 0%, var(--dusk-deep) 100%);
+    border: 1.5px solid var(--gold);
+    border-radius: 170px 170px 16px 16px;
+    padding: 48px 28px 30px;
+    text-align: center; color: var(--ivory);
+    box-shadow: 0 6px 24px rgba(24,33,58,0.22);
+  }
+  .arch .label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold-bright);
+  }
+  .arch .total {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700; font-size: 72px; line-height: 1;
+    margin-top: 10px; color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .arch .sub {
+    margin-top: 10px; font-size: 13px; color: #B9C2D8;
+  }
+  .arch .live-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold-bright); margin-right: 6px;
+    animation: pulse 2.4s ease-in-out infinite;
+    vertical-align: 1px;
+  }
+  @keyframes pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .arch .live-dot { animation: none; }
+  }
+
+  /* ---------- Ideas list ---------- */
+  .ideas { list-style: none; margin-top: 16px; }
+  .ideas li {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 11px 0; border-bottom: 1px solid var(--line);
+    font-size: 15px;
+  }
+  .ideas li:last-child { border-bottom: none; }
+  .chip {
+    flex: none; margin-top: 1px;
+    font-size: 12px; font-weight: 700; color: var(--gold);
+    border: 1px solid var(--gold); border-radius: 999px;
+    padding: 1px 8px; line-height: 1.5;
+  }
+  .ideas-note {
+    margin-top: 14px; text-align: center;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 17px; color: var(--dusk);
+  }
+
+  .setup-banner {
+    margin-top: 24px; padding: 14px 16px; border-radius: 10px;
+    background: #FCF3E4; border: 1px solid #E8CFA0;
+    font-size: 14px; color: #7A5A1E; display: none;
+  }
+
+  footer {
+    text-align: center; margin-top: 44px;
+    font-size: 12.5px; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Ellsworth Park Ward</div>
+    <h1>Temple &amp; Family History Project</h1>
+    <p class="intro">
+      As a ward, we're working together to draw closer to the Lord through
+      temple worship and family history. Every ordinance, every name, every
+      story counts — record your points below and watch our total grow.
+    </p>
+    <div class="scripture">
+      <div class="scripture-rule"></div>
+      <p>&ldquo;Remember the worth of souls is great in the sight of God.&rdquo;</p>
+      <cite>Doctrine &amp; Covenants 18:10</cite>
+    </div>
+  </header>
+
+  <div class="setup-banner" id="setupBanner">
+    <strong>Setup needed:</strong> add your Supabase project URL and anon key
+    near the top of this file's script section.
+  </div>
+
+  <section class="card" aria-labelledby="submitHeading">
+    <h2 id="submitHeading">Add your points</h2>
+    <p class="hint">Submissions are anonymous — just like the drop box.</p>
+    <div class="points-row">
+      <input type="number" id="pointsInput" inputmode="numeric" min="1" max="10000"
+             placeholder="0" aria-label="Points earned">
+      <button class="submit" id="submitBtn">Add points</button>
+    </div>
+    <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="arch" aria-labelledby="totalLabel">
+    <div class="label" id="totalLabel">This month's ward total</div>
+    <div class="total" id="monthTotal">—</div>
+    <div class="sub"><span class="live-dot" aria-hidden="true"></span>Updates live as members add points</div>
+  </section>
+
+  <section class="card" aria-labelledby="ideasHeading">
+    <h2 id="ideasHeading">Ways to earn points</h2>
+    <ul class="ideas">
+      <li><span class="chip">+1</span>Per ordinance done in the temple</li>
+      <li><span class="chip">+1</span>Per family name done</li>
+      <li><span class="chip">+1</span>Per person you learn about</li>
+      <li><span class="chip">+1</span>Per person walking the temple grounds</li>
+      <li><span class="chip">+1</span>Per person who touches the temple</li>
+      <li><span class="chip">+1</span>Per story told about your childhood or that of an ancestor</li>
+      <li><span class="chip">+1</span>Each time you sign into FamilySearch and learn something new</li>
+      <li><span class="chip">+1</span>Per story, photo, document, name, or piece of information added to FamilySearch</li>
+      <li><span class="chip">+1</span>Each time you serve as a temple worker</li>
+    </ul>
+    <p class="ideas-note">You can do these as many times as you want.</p>
+  </section>
+
+  <footer>Ellsworth Park Ward · Temple &amp; Family History Committee</footer>
+</div>
+
+<script>
+/* ===========================================================
+   SETUP — paste your Supabase details here
+   =========================================================== */
+const SUPABASE_URL = "https://yxxjfrpjducuqytoywwh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eGpmcnBqZHVjdXF5dG95d3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNzkzOTIsImV4cCI6MjA5ODg1NTM5Mn0.xYMvy7e5pMrX3sfjP7sYL-w3_JCAC7xbvJ-IdVoEUHo";
+const TABLE = "point_entries";
+const POLL_MS = 10000; // refresh the live total every 10 seconds
+/* =========================================================== */
+
+const configured = !SUPABASE_URL.includes("PASTE") && !SUPABASE_ANON_KEY.includes("PASTE");
+const headers = {
+  "apikey": SUPABASE_ANON_KEY,
+  "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+  "Content-Type": "application/json"
+};
+
+const totalEl = document.getElementById("monthTotal");
+const input = document.getElementById("pointsInput");
+const btn = document.getElementById("submitBtn");
+const feedback = document.getElementById("feedback");
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let displayedTotal = null;
+
+function monthBounds() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const pad = n => String(n).padStart(2, "0");
+  const start = `${y}-${pad(m + 1)}-01`;
+  const next = m === 11 ? `${y + 1}-01-01` : `${y}-${pad(m + 2)}-01`;
+  return { start, next };
+}
+
+async function fetchMonthTotal() {
+  if (!configured) return;
+  const { start, next } = monthBounds();
+  const url = `${SUPABASE_URL}/rest/v1/${TABLE}` +
+    `?select=points&entry_date=gte.${start}&entry_date=lt.${next}&limit=10000`;
+  try {
+    const res = await fetch(url, { headers });
+    if (!res.ok) throw new Error(res.status);
+    const rows = await res.json();
+    const total = rows.reduce((sum, r) => sum + (r.points || 0), 0);
+    renderTotal(total);
+  } catch (e) {
+    if (displayedTotal === null) totalEl.textContent = "—";
+  }
+}
+
+function renderTotal(total) {
+  if (displayedTotal === null || reduceMotion) {
+    totalEl.textContent = total.toLocaleString();
+    displayedTotal = total;
+    return;
+  }
+  if (total === displayedTotal) return;
+  const from = displayedTotal, to = total;
+  const duration = 700, t0 = performance.now();
+  function step(t) {
+    const p = Math.min((t - t0) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    totalEl.textContent = Math.round(from + (to - from) * eased).toLocaleString();
+    if (p < 1) requestAnimationFrame(step);
+    else displayedTotal = to;
+  }
+  requestAnimationFrame(step);
+}
+
+function setFeedback(msg, cls) {
+  feedback.textContent = msg;
+  feedback.className = "feedback" + (cls ? " " + cls : "");
+}
+
+async function submitPoints() {
+  const n = parseInt(input.value, 10);
+  if (!configured) { setFeedback("This page isn't connected to the database yet.", "err"); return; }
+  if (!n || n < 1) { setFeedback("Enter a number of points first.", "err"); input.focus(); return; }
+  if (n > 10000) { setFeedback("That number looks too large — please double-check.", "err"); return; }
+
+  btn.disabled = true;
+  setFeedback("Adding…");
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
+      method: "POST",
+      headers: { ...headers, "Prefer": "return=minimal" },
+      body: JSON.stringify([{ points: n, source: "app" }])
+    });
+    if (!res.ok) throw new Error(res.status);
+    input.value = "";
+    setFeedback(`Thank you! ${n.toLocaleString()} point${n === 1 ? "" : "s"} added.`, "ok");
+    fetchMonthTotal();
+  } catch (e) {
+    setFeedback("Couldn't add points — check your connection and try again.", "err");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+btn.addEventListener("click", submitPoints);
+input.addEventListener("keydown", e => { if (e.key === "Enter") submitPoints(); });
+
+if (!configured) document.getElementById("setupBanner").style.display = "block";
+fetchMonthTotal();
+setInterval(fetchMonthTotal, POLL_MS);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) fetchMonthTotal();
+});
+</script>
+</body>
+</html>
