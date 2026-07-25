@@ -146,6 +146,23 @@
     .arch .live-dot { animation: none; }
   }
 
+  /* ---------- Year-to-date strip ---------- */
+  .ytd {
+    display: flex; align-items: baseline; justify-content: center; gap: 10px;
+    margin: 14px auto 0; max-width: 300px;
+    padding: 13px 20px;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  }
+  .ytd .label {
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .ytd .total {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700; font-size: 25px; color: var(--dusk);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* ---------- Ideas list ---------- */
   .ideas { list-style: none; margin-top: 16px; }
   .ideas li {
@@ -218,6 +235,11 @@
     <div class="sub"><span class="live-dot" aria-hidden="true"></span>Updates live as members add points</div>
   </section>
 
+  <div class="ytd" aria-labelledby="ytdLabel">
+    <span class="label" id="ytdLabel">Year to date</span>
+    <span class="total" id="yearTotal">—</span>
+  </div>
+
   <section class="card" aria-labelledby="ideasHeading">
     <h2 id="ideasHeading">Ways to earn points</h2>
     <ul class="ideas">
@@ -254,54 +276,67 @@ const headers = {
   "Content-Type": "application/json"
 };
 
-const totalEl = document.getElementById("monthTotal");
+const monthEl = document.getElementById("monthTotal");
+const yearEl = document.getElementById("yearTotal");
 const input = document.getElementById("pointsInput");
 const btn = document.getElementById("submitBtn");
 const feedback = document.getElementById("feedback");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-let displayedTotal = null;
+let displayedMonth = null;
+let displayedYear = null;
 
-function monthBounds() {
+function yearStart() {
   const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth();
-  const pad = n => String(n).padStart(2, "0");
-  const start = `${y}-${pad(m + 1)}-01`;
-  const next = m === 11 ? `${y + 1}-01-01` : `${y}-${pad(m + 2)}-01`;
-  return { start, next };
+  return `${now.getFullYear()}-01-01`;
 }
 
-async function fetchMonthTotal() {
+function currentMonthPrefix() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+// One query covers Jan 1 through today; the month total is just the
+// subset of those same rows, so there's no need for a second round trip.
+async function fetchTotals() {
   if (!configured) return;
-  const { start, next } = monthBounds();
   const url = `${SUPABASE_URL}/rest/v1/${TABLE}` +
-    `?select=points&entry_date=gte.${start}&entry_date=lt.${next}&limit=10000`;
+    `?select=points,entry_date&entry_date=gte.${yearStart()}&limit=10000`;
   try {
     const res = await fetch(url, { headers });
     if (!res.ok) throw new Error(res.status);
     const rows = await res.json();
-    const total = rows.reduce((sum, r) => sum + (r.points || 0), 0);
-    renderTotal(total);
+    const monthPrefix = currentMonthPrefix();
+    let yearTotal = 0, monthTotal = 0;
+    for (const r of rows) {
+      const pts = r.points || 0;
+      yearTotal += pts;
+      if ((r.entry_date || "").startsWith(monthPrefix)) monthTotal += pts;
+    }
+    renderTotal(monthEl, monthTotal, v => displayedMonth = v, () => displayedMonth);
+    renderTotal(yearEl, yearTotal, v => displayedYear = v, () => displayedYear);
   } catch (e) {
-    if (displayedTotal === null) totalEl.textContent = "—";
+    if (displayedMonth === null) monthEl.textContent = "—";
+    if (displayedYear === null) yearEl.textContent = "—";
   }
 }
 
-function renderTotal(total) {
-  if (displayedTotal === null || reduceMotion) {
-    totalEl.textContent = total.toLocaleString();
-    displayedTotal = total;
+function renderTotal(el, total, setDisplayed, getDisplayed) {
+  const current = getDisplayed();
+  if (current === null || reduceMotion) {
+    el.textContent = total.toLocaleString();
+    setDisplayed(total);
     return;
   }
-  if (total === displayedTotal) return;
-  const from = displayedTotal, to = total;
+  if (total === current) return;
+  const from = current, to = total;
   const duration = 700, t0 = performance.now();
   function step(t) {
     const p = Math.min((t - t0) / duration, 1);
     const eased = 1 - Math.pow(1 - p, 3);
-    totalEl.textContent = Math.round(from + (to - from) * eased).toLocaleString();
+    el.textContent = Math.round(from + (to - from) * eased).toLocaleString();
     if (p < 1) requestAnimationFrame(step);
-    else displayedTotal = to;
+    else setDisplayed(to);
   }
   requestAnimationFrame(step);
 }
@@ -328,7 +363,7 @@ async function submitPoints() {
     if (!res.ok) throw new Error(res.status);
     input.value = "";
     setFeedback(`Thank you! ${n.toLocaleString()} point${n === 1 ? "" : "s"} added.`, "ok");
-    fetchMonthTotal();
+    fetchTotals();
   } catch (e) {
     setFeedback("Couldn't add points — check your connection and try again.", "err");
   } finally {
@@ -340,10 +375,10 @@ btn.addEventListener("click", submitPoints);
 input.addEventListener("keydown", e => { if (e.key === "Enter") submitPoints(); });
 
 if (!configured) document.getElementById("setupBanner").style.display = "block";
-fetchMonthTotal();
-setInterval(fetchMonthTotal, POLL_MS);
+fetchTotals();
+setInterval(fetchTotals, POLL_MS);
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) fetchMonthTotal();
+  if (!document.hidden) fetchTotals();
 });
 </script>
 </body>
