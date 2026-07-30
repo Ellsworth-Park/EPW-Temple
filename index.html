@@ -146,20 +146,24 @@
     .arch .live-dot { animation: none; }
   }
 
-  /* ---------- Year-to-date strip ---------- */
-  .ytd {
-    display: flex; align-items: baseline; justify-content: center; gap: 10px;
-    margin: 14px auto 0; max-width: 300px;
-    padding: 13px 20px;
+  /* ---------- Previous month / year-to-date strip ---------- */
+  .mini-stats {
+    display: flex; gap: 10px;
+    margin: 14px auto 0; max-width: 340px;
+  }
+  .mini-stat {
+    flex: 1; text-align: center;
+    padding: 13px 10px;
     background: #fff; border: 1px solid var(--line); border-radius: 12px;
   }
-  .ytd .label {
-    font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em;
+  .mini-stat .label {
+    display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
     text-transform: uppercase; color: var(--muted);
   }
-  .ytd .total {
+  .mini-stat .value {
+    display: block; margin-top: 4px;
     font-family: 'Cormorant Garamond', serif;
-    font-weight: 700; font-size: 25px; color: var(--dusk);
+    font-weight: 700; font-size: 24px; color: var(--dusk);
     font-variant-numeric: tabular-nums;
   }
 
@@ -235,9 +239,15 @@
     <div class="sub"><span class="live-dot" aria-hidden="true"></span>Updates live as members add points</div>
   </section>
 
-  <div class="ytd" aria-labelledby="ytdLabel">
-    <span class="label" id="ytdLabel">Year to date</span>
-    <span class="total" id="yearTotal">—</span>
+  <div class="mini-stats">
+    <div class="mini-stat">
+      <span class="label" id="prevMonthLabel">Last month</span>
+      <span class="value" id="prevMonthTotal">—</span>
+    </div>
+    <div class="mini-stat">
+      <span class="label" id="ytdLabel">Year to date</span>
+      <span class="value" id="yearTotal">—</span>
+    </div>
   </div>
 
   <section class="card" aria-labelledby="ideasHeading">
@@ -277,6 +287,8 @@ const headers = {
 };
 
 const monthEl = document.getElementById("monthTotal");
+const prevMonthEl = document.getElementById("prevMonthTotal");
+const prevMonthLabelEl = document.getElementById("prevMonthLabel");
 const yearEl = document.getElementById("yearTotal");
 const input = document.getElementById("pointsInput");
 const btn = document.getElementById("submitBtn");
@@ -284,39 +296,63 @@ const feedback = document.getElementById("feedback");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let displayedMonth = null;
+let displayedPrevMonth = null;
 let displayedYear = null;
 
-function yearStart() {
+function pad(n) { return String(n).padStart(2, "0"); }
+
+function currentMonthPrefix() {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
+}
+
+function prevMonthPrefix() {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+}
+
+function yearStartDate() {
   const now = new Date();
   return `${now.getFullYear()}-01-01`;
 }
 
-function currentMonthPrefix() {
+// The query needs to reach back far enough to cover last month even when
+// last month falls in the prior year (i.e. it's currently January), so the
+// start date is the earlier of "Jan 1 this year" and "the 1st of last month."
+function queryStartDate() {
   const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const janFirst = new Date(now.getFullYear(), 0, 1);
+  const start = prevMonthStart < janFirst ? prevMonthStart : janFirst;
+  return `${start.getFullYear()}-${pad(start.getMonth() + 1)}-01`;
 }
 
-// One query covers Jan 1 through today; the month total is just the
-// subset of those same rows, so there's no need for a second round trip.
 async function fetchTotals() {
   if (!configured) return;
   const url = `${SUPABASE_URL}/rest/v1/${TABLE}` +
-    `?select=points,entry_date&entry_date=gte.${yearStart()}&limit=10000`;
+    `?select=points,entry_date&entry_date=gte.${queryStartDate()}&limit=10000`;
   try {
     const res = await fetch(url, { headers });
     if (!res.ok) throw new Error(res.status);
     const rows = await res.json();
     const monthPrefix = currentMonthPrefix();
-    let yearTotal = 0, monthTotal = 0;
+    const lastMonthPrefix = prevMonthPrefix();
+    const yStart = yearStartDate();
+    let yearTotal = 0, monthTotal = 0, prevMonthTotal = 0;
     for (const r of rows) {
       const pts = r.points || 0;
-      yearTotal += pts;
-      if ((r.entry_date || "").startsWith(monthPrefix)) monthTotal += pts;
+      const date = r.entry_date || "";
+      if (date >= yStart) yearTotal += pts;
+      if (date.startsWith(monthPrefix)) monthTotal += pts;
+      if (date.startsWith(lastMonthPrefix)) prevMonthTotal += pts;
     }
     renderTotal(monthEl, monthTotal, v => displayedMonth = v, () => displayedMonth);
+    renderTotal(prevMonthEl, prevMonthTotal, v => displayedPrevMonth = v, () => displayedPrevMonth);
     renderTotal(yearEl, yearTotal, v => displayedYear = v, () => displayedYear);
   } catch (e) {
     if (displayedMonth === null) monthEl.textContent = "—";
+    if (displayedPrevMonth === null) prevMonthEl.textContent = "—";
     if (displayedYear === null) yearEl.textContent = "—";
   }
 }
@@ -375,6 +411,14 @@ btn.addEventListener("click", submitPoints);
 input.addEventListener("keydown", e => { if (e.key === "Enter") submitPoints(); });
 
 if (!configured) document.getElementById("setupBanner").style.display = "block";
+
+// Show the actual month name, e.g. "June", instead of a generic label
+(function setPrevMonthLabel() {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  prevMonthLabelEl.textContent = d.toLocaleDateString(undefined, { month: "long" });
+})();
+
 fetchTotals();
 setInterval(fetchTotals, POLL_MS);
 document.addEventListener("visibilitychange", () => {
